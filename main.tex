@@ -1,0 +1,143 @@
+\documentclass[10pt,xcolor=table]{beamer}
+
+\usetheme[progressbar=frametitle]{metropolis}
+\usepackage{appendixnumberbeamer}
+\usepackage{hyperref}
+\usepackage{tikz}
+% \usetikzlibrary{calc,decorations.pathreplacing,snakes}
+\usetikzlibrary{calc,decorations.pathreplacing}
+\usepackage{multicol}
+\usepackage{comment}
+% \usepackage[portuguese]{babel}
+% \usepackage[style=authortitle,backend=bibtex]{biblatex}
+\usepackage[style=authortitle,backend=biber]{biblatex}
+\addbibresource{references.bib}
+\usepackage{subfig}
+\usepackage{csquotes}
+\usepackage{caption}
+\usepackage{listings}
+
+% Define style for C code
+\lstdefinestyle{CStyle}{
+  language=C,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{blue},
+  stringstyle=\color{red},
+  commentstyle=\color{green!50!black},
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  tabsize=2
+}
+
+\hypersetup{colorlinks=true,linkcolor=,urlcolor=blue}
+
+\expandafter\def\expandafter\insertshorttitle\expandafter{%
+  \insertshorttitle\hfill%
+  \insertframenumber\,/\,\inserttotalframenumber}
+
+\newcommand{\hideFromPandoc}[1]{#1}
+\hideFromPandoc{
+  \let\Begin\begin
+  \let\End\end
+}
+
+\newcommand{\verbatimfont}[1]{\renewcommand{\verbatim@font}{\ttfamily#1}}
+
+\newcommand{\PR}[1]{\ensuremath{\left[#1\right]}}
+\newcommand{\PC}[1]{\ensuremath{\left(#1\right)}}
+\newcommand{\chav}[1]{\ensuremath{\left\{#1\right\}}}
+
+\usepackage{booktabs}
+\usepackage[scale=2]{ccicons}
+
+\usepackage{pgfpages} % for multiple-screen presentations
+% \setbeameroption{show notes on second screen}
+% \setbeameroption{show notes on second screen=right} % Both
+
+\usepackage{pgfplots}
+\usepgfplotslibrary{dateplot}
+
+\usepackage{xspace}
+\newcommand{\themename}{\textbf{\textsc{metropolis}}\xspace}
+
+
+\setbeamertemplate{frame footer}{\includegraphics[height=0.65cm]{figs/ifpb.png}}
+
+\setbeamercolor{background canvas}{bg=white}
+
+% \setbeamertemplate{sections/subsections in toc}[ball]
+\setbeamertemplate{section in toc}[sections numbered]
+\setbeamertemplate{subsection in toc}[ball unnumbered]
+\setbeamerfont{footnote}{size=\scriptsize}
+
+\setbeamertemplate{blocks}[rounded][shadow]
+% \setbeameroption{show notes}
+
+% \renewcommand{\footnotesize}{\small}
+% \renewcommand*{\bibfont}{\tiny}
+
+% Main slide
+\title{Bachelor's Degree Program in \\ Software Engineering}
+% \subtitle{Subtitle}
+\date{\today}
+% \date{October 31, 2024}
+\author{\textbf{Prof. Dr. Paulo Ditarso Maciel Jr. (\href{mailto:paulo.maciel@ifpb.edu.br}{paulo.maciel@ifpb.edu.br})}}
+\institute{
+\centering
+\normalsize
+\vspace{0.5cm}
+{\Large \textbf{Operating Systems}}\\
+\vspace{1cm}
+{\small \textbf{Based on material from the book \href{https://pages.cs.wisc.edu/~remzi/OSTEP/}{\textit{Operating Systems: Three Easy Pieces}}.}} \\
+\vspace{1cm}
+{\scriptsize
+\texttt{\$ git clone \href{https://github.com/pdmjr/network_intro.git}{https://github.com/pdmjr/ostep\_slides.git}}
+}
+}
+
+\titlegraphic{\hfill\includegraphics[height=1.7cm]{figs/ifpb.png}}
+
+% -----------------------------------------------------------------------------
+% Figure placeholder used throughout this outline.
+% Replace each placeholder with \includegraphics[width=...]{...} after extracting
+% the corresponding figure from the chapter PDF.
+% -----------------------------------------------------------------------------
+\newcommand{\figureplaceholder}[2]{%
+  \begin{center}
+    \fbox{%
+      \begin{minipage}[c][0.27\textheight][c]{0.88\linewidth}
+        \centering
+        \textbf{#1}\\[0.5em]
+        \small #2
+      \end{minipage}%
+    }
+  \end{center}
+}
+
+\begin{document}
+
+\maketitle
+
+\input{sections/00_preface}
+\input{sections/01_dialogue}
+\input{sections/02_introduction}
+\input{sections/03_dialogue}
+\input{sections/04_processes}
+\input{sections/05_process_api}
+\input{sections/06_cpu_mechanisms}
+\input{sections/07_cpu_sched}
+
+\begin{frame}[allowframebreaks]
+\nocite{*}
+\printbibliography
+\end{frame}
+
+\begin{frame}{}
+  \centering \Large
+  \textbf{? \& | !}
+\end{frame}
+
+\end{document}
