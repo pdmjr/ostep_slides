@@ -1,0 +1,354 @@
+% =========================================================
+\section{Interlude: Memory API}
+% =========================================================
+
+\begin{frame}{Memory API}
+    \begin{block}{The Crux: How to Allocate and Manage Memory}
+        In UNIX/C programs, understanding how to allocate and manage
+        memory is critical for building robust and reliable software.
+    \end{block}
+
+    \begin{itemize}
+        \item What interfaces are commonly used?
+        \item What mistakes should be avoided?
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]{Types of Memory}
+    \begin{columns}
+        \begin{column}{0.48\textwidth}
+            \textbf{Stack Memory}
+            \begin{itemize}
+                \item Managed implicitly by the compiler.
+                \item Also called \emph{automatic memory}.
+                \item Allocated when a function is called.
+                \item Deallocated when the function returns.
+            \end{itemize}
+
+\begin{footnotesize}
+\begin{verbatim}
+void func() {
+    int x;
+    ...
+}
+\end{verbatim}
+\end{footnotesize}
+        \end{column}
+
+        \begin{column}{0.48\textwidth}
+            \textbf{Heap Memory}
+            \begin{itemize}
+                \item Explicitly managed by the programmer.
+                \item Used when memory must outlive a function call.
+                \item Allocation and deallocation require explicit calls.
+            \end{itemize}
+
+\begin{footnotesize}
+\begin{verbatim}
+void func() {
+    int *x =
+      (int *) malloc(sizeof(int));
+    ...
+}
+\end{verbatim}
+\end{footnotesize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]{The \texttt{malloc()} Call}
+    \begin{block}{Interface}
+\begin{verbatim}
+#include <stdlib.h>
+void *malloc(size_t size);
+\end{verbatim}
+    \end{block}
+
+    \begin{itemize}
+        \item Requests \texttt{size} bytes of heap memory.
+        \item Returns a pointer to the allocated region on success.
+        \item Returns \texttt{NULL} on failure.
+        \item \texttt{sizeof()} is commonly used to determine
+              the required allocation size.
+    \end{itemize}
+
+\begin{verbatim}
+double *d = (double *) malloc(sizeof(double));
+int *x = malloc(10 * sizeof(int));
+\end{verbatim}
+\end{frame}
+
+
+\begin{frame}[fragile]{Using \texttt{sizeof()}}
+    \begin{itemize}
+        \item \texttt{sizeof()} is an operator, generally evaluated
+              at compile time.
+        \item Be careful when applying it to pointers.
+    \end{itemize}
+
+\begin{verbatim}
+int *x = malloc(10 * sizeof(int));
+printf("%d\n", sizeof(x));
+\end{verbatim}
+
+    \begin{itemize}
+        \item \texttt{sizeof(x)} returns the size of the
+              \emph{pointer}, not the dynamically allocated region.
+    \end{itemize}
+
+\begin{verbatim}
+int x[10];
+printf("%d\n", sizeof(x));
+\end{verbatim}
+
+    \begin{itemize}
+        \item Here, the compiler has enough information to determine
+              the size of the entire array.
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Tip: When in Doubt, Try It Out}
+    \begin{block}{Tip}
+        If you are unsure how a routine or operator behaves,
+        write some code and test it.
+    \end{block}
+
+    \begin{itemize}
+        \item Manual pages and documentation are useful.
+        \item Testing confirms how something behaves in practice.
+        \item The chapter uses this approach to verify the behavior
+              of \texttt{sizeof()}.
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]{Strings and \texttt{malloc()}}
+    \begin{itemize}
+        \item String allocation requires room for the
+              end-of-string character.
+        \item The suggested idiom is:
+    \end{itemize}
+
+\begin{verbatim}
+malloc(strlen(s) + 1)
+\end{verbatim}
+
+    \begin{itemize}
+        \item \texttt{strlen()} determines the string length.
+        \item The additional byte stores the terminating character.
+        \item Using \texttt{sizeof()} for this purpose may lead
+              to errors.
+        \item The cast of the \texttt{void *} returned by
+              \texttt{malloc()} is not required for correctness.
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]{The \texttt{free()} Call}
+    \begin{itemize}
+        \item Allocating memory is relatively easy;
+              knowing when and how to free it is harder.
+        \item Heap memory that is no longer needed should be
+              released with \texttt{free()}.
+    \end{itemize}
+
+\begin{verbatim}
+int *x = malloc(10 * sizeof(int));
+...
+free(x);
+\end{verbatim}
+
+    \begin{itemize}
+        \item \texttt{free()} receives a pointer previously
+              returned by \texttt{malloc()}.
+        \item The allocation size is tracked by the
+              memory-allocation library.
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Common Memory Errors}
+    \begin{itemize}
+        \item Forgetting to allocate memory.
+        \item Not allocating enough memory (\emph{buffer overflow}).
+        \item Forgetting to initialize allocated memory.
+        \item Forgetting to free memory (\emph{memory leak}).
+        \item Freeing memory before use is complete
+              (\emph{dangling pointer}).
+        \item Freeing memory repeatedly (\emph{double free}).
+        \item Calling \texttt{free()} with an invalid pointer.
+    \end{itemize}
+
+    \begin{alertblock}{Important}
+        Compiling successfully is necessary, but far from sufficient,
+        for a correct C program.
+    \end{alertblock}
+\end{frame}
+
+
+\begin{frame}[fragile]{Forgetting to Allocate Memory}
+\begin{verbatim}
+char *src = "hello";
+char *dst;                 // unallocated
+strcpy(dst, src);          // likely segfault
+\end{verbatim}
+
+    \begin{itemize}
+        \item Some routines expect the destination memory to have
+              already been allocated.
+    \end{itemize}
+
+\begin{verbatim}
+char *src = "hello";
+char *dst =
+    (char *) malloc(strlen(src) + 1);
+strcpy(dst, src);
+\end{verbatim}
+
+    \begin{itemize}
+        \item Alternatively, \texttt{strdup()} can be used.
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Tip: It Compiled or Ran $\neq$ It Is Correct}
+    \begin{block}{Tip}
+        A program that compiles, or even runs correctly many times,
+        is not necessarily correct.
+    \end{block}
+
+    \begin{itemize}
+        \item Memory errors may remain unnoticed during some executions.
+        \item Small changes can expose previously hidden bugs.
+        \item Buffer overflows are an important example:
+              they may appear harmless, crash the program,
+              or create serious security problems.
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Memory Leaks and Dangling Pointers}
+    \begin{columns}
+        \begin{column}{0.48\textwidth}
+            \textbf{Memory Leak}
+            \begin{itemize}
+                \item Allocated memory is never freed.
+                \item Particularly problematic for long-running
+                      applications and systems.
+                \item Eventually, the application may run out
+                      of memory.
+            \end{itemize}
+        \end{column}
+
+        \begin{column}{0.48\textwidth}
+            \textbf{Dangling Pointer}
+            \begin{itemize}
+                \item Memory is freed before the program
+                      has finished using it.
+                \item Subsequent use may crash the program
+                      or overwrite valid memory.
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+
+\begin{frame}{Aside: Why No Memory Is Leaked Once a Process Exits}
+    \begin{itemize}
+        \item There are two levels of memory management:
+        \begin{enumerate}
+            \item the OS manages memory assigned to processes;
+            \item each process manages allocations within its own heap.
+        \end{enumerate}
+
+        \item A process may fail to call \texttt{free()} and thus
+              leak memory within its heap.
+
+        \item When the process exits, however, the OS reclaims
+              all of its memory:
+        \begin{itemize}
+            \item code;
+            \item stack;
+            \item heap.
+        \end{itemize}
+
+        \item Thus, leaks are especially problematic in
+              \textbf{long-running programs} and the \textbf{OS itself}.
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}{More Memory Errors}
+    \begin{description}
+        \item[Double free]
+        Calling \texttt{free()} more than once on the same memory;
+        the result is undefined.
+
+        \item[Invalid free]
+        Passing to \texttt{free()} a value other than an appropriate
+        pointer previously returned by \texttt{malloc()}.
+    \end{description}
+
+    \begin{block}{Finding Memory Problems}
+        Tools such as \texttt{purify} and \texttt{valgrind}
+        can help locate memory-related errors.
+    \end{block}
+\end{frame}
+
+
+\begin{frame}{Underlying OS Support}
+    \begin{itemize}
+        \item \texttt{malloc()} and \texttt{free()} are
+              \textbf{library calls}, not system calls.
+        \item The allocation library manages memory within the
+              process's virtual address space.
+        \item It relies on system calls to obtain or release memory.
+    \end{itemize}
+
+    \begin{description}
+        \item[\texttt{brk}/\texttt{sbrk}]
+        Change the end of the heap; applications should not call
+        them directly.
+
+        \item[\texttt{mmap()}]
+        Can create an anonymous memory region that can also be
+        managed like heap memory.
+    \end{description}
+\end{frame}
+
+
+\begin{frame}{Other Memory Allocation Calls}
+    \begin{description}
+        \item[\texttt{calloc()}]
+        Allocates memory and initializes it to zero.
+
+        \item[\texttt{realloc()}]
+        Creates a new, larger memory region, copies the old region
+        into it, and returns a pointer to the new region.
+    \end{description}
+
+    \begin{block}{Key Idea}
+        These routines complement \texttt{malloc()} and
+        \texttt{free()} for common dynamic-memory management needs.
+    \end{block}
+\end{frame}
+
+
+\begin{frame}{Summary}
+    \begin{itemize}
+        \item C programs use both \textbf{stack} and \textbf{heap} memory.
+        \item Heap memory is explicitly managed by the programmer.
+        \item \texttt{malloc()} allocates memory and
+              \texttt{free()} releases it.
+        \item Incorrect memory management can cause:
+              buffer overflows, uninitialized reads, memory leaks,
+              dangling pointers, double frees, and invalid frees.
+        \item \texttt{malloc()} and \texttt{free()} are library calls
+              built on top of OS memory-management mechanisms.
+        \item Tools such as \texttt{valgrind} help identify
+              memory-related problems.
+    \end{itemize}
+\end{frame}
